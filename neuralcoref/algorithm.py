@@ -10,7 +10,7 @@ import os
 import spacy
 import numpy as np
 
-from neuralcoref.data import Data, MENTION_TYPE, NO_COREF_LIST
+from neuralcoref.neuralcoref.data import Data, MENTION_TYPE, NO_COREF_LIST
 
 PACKAGE_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
