@@ -19,7 +19,7 @@ import numpy as np
 ####### UTILITIES #######
 #########################
 
-NO_COREF_LIST = ["i", "me", "my", "you", "your"]
+NO_COREF_LIST = ["i", "me", "my", "you", "your",'it']
 
 MENTION_TYPE = {"PRONOMINAL": 0, "NOMINAL": 1, "PROPER": 2, "LIST": 3}
 MENTION_LABEL = {0: "PRONOMINAL", 1: "NOMINAL", 2: "PROPER", 3: "LIST"}
@@ -185,6 +185,7 @@ class Mention(spacy.tokens.Span):
         self.features_ = None
         self.spans_embeddings_ = None
         self.words_embeddings_ = None
+        self.proper_tokens = None
 
     @property
     def propers(self):
@@ -335,7 +336,7 @@ class EmbeddingExtractor:
         voc = {}
         mat = np.load(name+"_embeddings.npy")
         average_mean = np.average(mat, axis=0, weights=np.sum(mat, axis=1))
-        with open(name+"_vocabulary.txt") as f:
+        with open(name+"_vocabulary.txt",encoding="utf-8") as f:
             for i, line in enumerate(f):
                 embeddings[line.strip()] = mat[i, :]
                 voc[line.strip()] = i
@@ -552,7 +553,7 @@ class Data:
     ###################################
     ## FEATURES MENTIONS EXTRACTION ###
     ###################################
-
+    
     def _extract_mentions(self, doc, utterance_index, n_sents, speaker):
         '''
         Extract mentions in a spacy doc (an utterance)
@@ -560,9 +561,11 @@ class Data:
         mentions_spans = extract_mentions_spans(doc, use_no_coref_list=self.use_no_coref_list)
         processed_spans = sorted((m for m in mentions_spans), key=lambda m: (m.root.i, m.start))
         n_mentions = len(self.mentions)
+#         print("processed span:",type(processed_spans))
         for mention_index, span in enumerate(processed_spans):
-            self.mentions.append(Mention(span, mention_index + n_mentions,
-                                             utterance_index, n_sents, speaker))
+            obj = Mention(span, mention_index + n_mentions,utterance_index, n_sents, speaker)
+            obj.proper_tokens = processed_spans
+            self.mentions.append(obj)
 
     def set_mentions_features(self):
         '''
